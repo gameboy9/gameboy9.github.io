@@ -11,16 +11,30 @@
 	<div w3-include-html="menu.html"></div>
 	
 	<div class="w3-container w3-row" style="margin-top: 64px;">
+		<span>Calculation: </span><br />
+		<input type="radio" id="detailedOnlyOption" name="calculationType" onclick="showDetailed()" checked />
+		<label for="detailedOnlyOption">One detailed scenario</label><br />
+		<input type="radio" id="optimizedOption" name="calculationType" onclick="showOptimized()" />
+		<label for="optimizedOption">Optimize for a maximum rounds limit</label>
+	</div>
+
+	<div class="w3-container w3-row" style="margin-top: 16px;">
+		<input type="number" id="playerCountLow" name="playerCountLow" min="2" max="1000" value="16" class="optimized-only w3-hide" />
+		<label for="playerCountLow" class="optimized-only w3-hide">to </label>
 		<input type="number" id="playerCount" name="playerCount" min="2" max="1000" value="50" />
 		<label for="playerCount">contestants in </label>
 		<input type="number" id="groupCount" name="groupCount" min="2" max="4" value="4" />
-		<label for="playerCount"> player groups.  The pace starts at </label>
-		<input type="number" id="strikes" name="strikes" min="1" max="1000" value="30" />
-		<label for="paceRound">points at round </label>
+		<label for="playerCount"> player groups. The pace starts at </label>
+		<input type="number" id="strikes" name="strikes" min="1" max="1000" value="30" class="detailed-only"/>
+		<label for="paceRound" class="detailed-only">points. </label> 
+		<label for="maxRounds" class="optimized-only w3-hide">the lowest number of points that still guarantees the final player count is reached within</label>
+		<input type="number" id="maxRounds" name="maxRounds" min="1" max="50" value="13" class="optimized-only w3-hide" />
+		<label for="maxRounds" class="optimized-only w3-hide">rounds. </label>
+		<label for="paceRound">The initial pace is applied after round </label>
 		<input type="number" id="paceRound" name="paceRound" min="1" max="100" value="7" />
-		<label for="strikes">.  The pace will increase by </label>
+		<span>.  The pace will increase by </span>
 		<input type="number" id="paceIncrement" name="paceIncrement" min="1" max="100" value="7" />
-		<label for="strikes">points each round.  Eliminations will continue until </label>
+		<label for="paceIncrement">points each round.  Eliminations will continue until </label>
 		<input type="number" id="playersLeft" name="playersLeft" min="1" max="1000" value="1" />
 		<label for="playersLeft"> player(s) remain.</label>
 	</div>
@@ -59,74 +73,88 @@
 		</div>
 	</div>
 	
-	<div class="w3-row w3-container" style="margin-top: 16px;">
+	<div class="w3-row w3-container detailed-only" style="margin-top: 16px;">
 		<button class="w3-button w3-green w3-hover-black w3-round" type="button" onclick="tgpButton()">Calculate Tournament</button>
+	</div>
+
+	<div class="w3-row w3-container optimized-only w3-hide" style="margin-top: 16px;">
+		<button class="w3-button w3-blue w3-hover-black w3-round" type="button" onclick="optimalPaceButton()">Calculate Optimal Pace</button>
+		<div class="w3-light-grey" style="width: 80%; margin-top: 8px;">
+			<div class="w3-container w3-green w3-center" style="padding: 0px; height: 24px; width: 0%" id="optimalPaceProgress"></div>
+		</div>
 	</div>
 
 	<div class="w3-row w3-container" style="margin-top: 16px;">
 		<div class="w3-col s4 m4 l2"><b>Results</b></div>
 	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Meaningful Games</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="MeaningfulGames"> </div>
+	<div class="w3-row w3-container optimized-only w3-hide">
+		<div class="w3-col s4 m4 l2">Optimal Intial Pace</div>
+		<div class="w3-col s8 m5 l3 w3-right-align" id="OptimalInitialPace"> </div>
 	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Approximate TGP</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="ApproxTGP"></div>
+
+	<div class="detailed-only">
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Meaningful Games</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="MeaningfulGames"> </div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Approximate TGP</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="ApproxTGP"></div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2 w3-border-top">Average Rounds</div>
+			<div class="w3-col s4 m4 l1 w3-border-top w3-right-align" id="AvgRounds">&nbsp;</div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Least / Most rounds</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="ExtremeRounds"> </div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2 w3-border-bottom">5th-95th %tile</div>
+			<div class="w3-col s4 m4 l1 w3-right-align w3-border-bottom" id="ReasonableRounds">&nbsp;</div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Avg 1st cut players</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="AvgCut"></div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Least / Most players</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="ExtremeCut"></div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2 w3-border-bottom">5th-95th %tile</div>
+			<div class="w3-col s4 m4 l1 w3-border-bottom w3-right-align" id="ReasonableCut">&nbsp;</div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Average end players</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="AvgPlayers"></div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Least / Most players</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="ExtremePlayers"></div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2 w3-border-bottom">5th-95th %tile</div>
+			<div class="w3-col s4 m4 l1 w3-border-bottom w3-right-align" id="ReasonablePlayers">&nbsp;</div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Avg Rounds-2P</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="2pGames"></div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Avg Rounds-3P</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="3pGames"></div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Avg Rounds-4P</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="4pGames"></div>
+		</div>
+		<div class="w3-row w3-container">
+			<div class="w3-col s4 m4 l2">Avg Rounds-All</div>
+			<div class="w3-col s4 m4 l1 w3-right-align" id="TotalGames"></div>
+		</div>
 	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2 w3-border-top">Average Rounds</div>
-		<div class="w3-col s4 m4 l1 w3-border-top w3-right-align" id="AvgRounds">&nbsp;</div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Least / Most rounds</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="ExtremeRounds"> </div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2 w3-border-bottom">5th-95th %tile</div>
-		<div class="w3-col s4 m4 l1 w3-right-align w3-border-bottom" id="ReasonableRounds">&nbsp;</div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Avg 1st cut players</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="AvgCut"></div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Least / Most players</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="ExtremeCut"></div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2 w3-border-bottom">5th-95th %tile</div>
-		<div class="w3-col s4 m4 l1 w3-border-bottom w3-right-align" id="ReasonableCut">&nbsp;</div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Average end players</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="AvgPlayers"></div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Least / Most players</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="ExtremePlayers"></div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2 w3-border-bottom">5th-95th %tile</div>
-		<div class="w3-col s4 m4 l1 w3-border-bottom w3-right-align" id="ReasonablePlayers">&nbsp;</div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Avg Rounds-2P</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="2pGames"></div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Avg Rounds-3P</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="3pGames"></div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Avg Rounds-4P</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="4pGames"></div>
-	</div>
-	<div class="w3-row w3-container">
-		<div class="w3-col s4 m4 l2">Avg Rounds-All</div>
-		<div class="w3-col s4 m4 l1 w3-right-align" id="TotalGames"></div>
-	</div>
-	
+
 	<div class="w3-container" style="margin-top: 32px;">
 		<h6 class="w3-opacity">
 			DISCLAIMER:  This calculator assumes that the highest rated player will defeat the lowest rated player 7 times out of 8.
@@ -139,6 +167,7 @@
 		</h6>
 	</div>
 </body>
+<script src="js/calcknockout.js"></script>
 <script src="js/pacematch.js"></script>
 <script src="js/menu.js"></script>
 <script>includeHTML();</script>
