@@ -934,10 +934,14 @@ function showParameters() {
 	showElement("parametersSection");
 	hideElement("showParametersButton");
 	showElement("hideParametersButton");
+	const controlLabels = document.getElementsByClassName("control-labels");
+	[...controlLabels].forEach(el => el.classList.remove("w3-hide"));
 }
 
 function hideParameters() {
 	hideElement("parametersSection");
 	showElement("showParametersButton");
 	hideElement("hideParametersButton");
+	const controlLabels = document.getElementsByClassName("control-labels");
+	[...controlLabels].forEach(el => el.classList.add("w3-hide"));
 }

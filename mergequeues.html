@@ -6,6 +6,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Best Game Queue Merger</title>
 	<style>
+		.button-icon {
+			height: 20px;
+			vertical-align: top;
+		}
+
 		.truncate {
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -69,8 +74,20 @@
 			A Match Play Events API Token is required. If you don't already have one, click Get Token to visit your MPE account settings page and create one.
 		</div>
 		<div class="w3-container w3-row" style="margin-top: 8px;">
-			<a class="w3-button" href="https://app.matchplay.events/api-docs/#authenticating-requests" title="Match Play Events API Authentication Documentation">🛈 Info</a>
-			<a class="w3-button" href="https://app.matchplay.events/account/tokens" title="Create an API Token in your MPE Account Settings">🔑 Get Token</a>
+			<a class="w3-button" href="https://app.matchplay.events/api-docs/#authenticating-requests" title="Match Play Events API Authentication Documentation">
+				<!-- heroicons information-circle -->
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="button-icon">
+					<path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
+				</svg>
+				Info
+			</a>
+			<a class="w3-button" href="https://app.matchplay.events/account/tokens" title="Create an API Token in your MPE Account Settings">
+				<!-- heroicons key -->
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="button-icon">
+					<path fill-rule="evenodd" d="M15.75 1.5a6.75 6.75 0 0 0-6.651 7.906c.067.39-.032.717-.221.906l-6.5 6.499a3 3 0 0 0-.878 2.121v2.818c0 .414.336.75.75.75H6a.75.75 0 0 0 .75-.75v-1.5h1.5A.75.75 0 0 0 9 19.5V18h1.5a.75.75 0 0 0 .53-.22l2.658-2.658c.19-.189.517-.288.906-.22A6.75 6.75 0 1 0 15.75 1.5Zm0 3a.75.75 0 0 0 0 1.5A2.25 2.25 0 0 1 18 8.25a.75.75 0 0 0 1.5 0 3.75 3.75 0 0 0-3.75-3.75Z" clip-rule="evenodd" />
+				</svg>
+				Get Token
+			</a>
 			<button class="w3-button w3-dark-grey w3-hover-black w3-round" type="button" onclick="saveApiKey()" id="saveApiKeyButton" title="Writes this token to browser local storage">Save API Token</button>
 			<button class="w3-button w3-dark-grey w3-hover-black w3-round" type="button" onclick="clearSavedApiKey()" id="clearSavedApiKeyButton" title="Clears any token saved in browser local storage">Clear Saved Token</button>
 			<span id="saveKeyStatus"></span>
@@ -125,13 +142,61 @@
 	</div>
 
 	<div class="w3-row w3-container" style="margin-top: 16px;">
-		<button class="w3-button w3-green w3-hover-black w3-round" type="button" id="loadQueuesButton" onclick="loadQueuesButton()">Load Queues</button>
-		<button class="w3-button w3-pale-red w3-hover-black w3-round" type="button" id="loadPlayersButton" onclick="loadPlayersButton()" title="Loads names for newly added players and arenas. Also updates arena deactivaed/blocked/closed status. Use this only when needed.">Load Missing Players</button>
-		<button class="w3-button w3-pale-green w3-hover-black w3-round" type="button" id="startAutoLoadButton" onclick="startAutoLoadQueuesButton()" title="Loads queues every 30 seconds and loads missing tournaments and arenas as needed">Start Auto-refresh</button>
-		<button class="w3-button w3-pale-blue w3-hover-black w3-round w3-hide" type="button" id="stopAutoLoadButton" onclick="stopAutoLoadQueuesButton()">Stop Auto-refresh</button>
-		<button class="w3-button w3-dark-grey w3-hover-black w3-round w3-hide" type="button" id="showParametersButton" onclick="showParameters()">Show Parameters</button>
-		<button class="w3-button w3-dark-grey w3-hover-black w3-round" type="button" id="hideParametersButton" onclick="hideParameters()">Hide Parameters</button>
-		<br />
+		<button class="w3-button w3-green w3-hover-black w3-round" type="button" id="loadQueuesButton" onclick="loadQueuesButton()">
+			<!-- heroicons arrow-path -->
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="button-icon">
+				<path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z" clip-rule="evenodd" />
+			</svg>
+			<span class="control-labels">Load Queues</span>
+		</button>
+		<button class="w3-button w3-pale-red w3-hover-black w3-round" type="button" id="loadPlayersButton" onclick="loadPlayersButton()" title="Loads names for newly added players and arenas. Also updates arena deactivaed/blocked/closed status. Use this only when needed.">
+			<!-- heroicons user-plus -->
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="button-icon">
+				<path d="M5.25 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM2.25 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM18.75 7.5a.75.75 0 0 0-1.5 0v2.25H15a.75.75 0 0 0 0 1.5h2.25v2.25a.75.75 0 0 0 1.5 0v-2.25H21a.75.75 0 0 0 0-1.5h-2.25V7.5Z" />
+			</svg>
+			<span class="control-labels">Load Missing Players</span>
+		</button>
+		<button class="w3-button w3-pale-green w3-hover-black w3-round" type="button" id="startAutoLoadButton" onclick="startAutoLoadQueuesButton()" title="Loads queues every 30 seconds and loads missing tournaments and arenas as needed">
+			<!-- heroicons arrow-path with added infinity text-->
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="button-icon">
+				<style>
+				.heavy {
+					font: normal 18px sans-serif;
+				}
+				</style>
+				<path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z" clip-rule="evenodd" />
+				<text x="5" y="19" class="heavy">∞</text>
+			</svg>
+			<span class="control-labels">Start Auto-refresh</span>
+		</button>
+		<button class="w3-button w3-pale-blue w3-hover-black w3-round w3-hide" type="button" id="stopAutoLoadButton" onclick="stopAutoLoadQueuesButton()">
+			<!-- heroicons no-symbol with added infinity text -->
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="button-icon">
+				<style>
+				.heavy {
+					font: normal 18px sans-serif;
+				}
+				</style>
+				<path fill-rule="evenodd" d="m6.72 5.66 11.62 11.62A8.25 8.25 0 0 0 6.72 5.66Zm10.56 12.68L5.66 6.72a8.25 8.25 0 0 0 11.62 11.62ZM5.105 5.106c3.807-3.808 9.98-3.808 13.788 0 3.808 3.807 3.808 9.98 0 13.788-3.807 3.808-9.98 3.808-13.788 0-3.808-3.807-3.808-9.98 0-13.788Z" clip-rule="evenodd" />
+				<text x="5" y="19" class="heavy">∞</text>
+			</svg>
+			<span class="control-labels">Stop Auto-refresh</span>
+		</button>
+		<button class="w3-button w3-dark-grey w3-hover-black w3-round w3-hide" type="button" id="showParametersButton" onclick="showParameters()">
+			<!-- heroicons adjustments-horizontal -->
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="button-icon">
+				<path d="M18.75 12.75h1.5a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM12 6a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 6ZM12 18a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 18ZM3.75 6.75h1.5a.75.75 0 1 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM5.25 18.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 0 1.5ZM3 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 3 12ZM9 3.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5ZM12.75 12a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM9 15.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+			</svg>
+			<span class="control-labels">Show Controls</span>
+		</button>
+		<button class="w3-button w3-dark-grey w3-hover-black w3-round" type="button" id="hideParametersButton" onclick="hideParameters()">
+			<!-- heroicons adjustments-horizontal with added slash line -->
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="button-icon">
+				<path d="M18.75 12.75h1.5a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM12 6a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 6ZM12 18a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 18ZM3.75 6.75h1.5a.75.75 0 1 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM5.25 18.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 0 1.5ZM3 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 3 12ZM9 3.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5ZM12.75 12a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM9 15.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+				<line x1="2" y1="2" x2="22" y2="22" stroke-width="3" stroke="currentColor" />
+			</svg>
+			<span class="control-labels">Hide Controls</span>
+		</button>
 		<span class="nowrap w3-hide" id="lastUpdated">Last updated: never</span>
 		<div class="w3-container w3-row w3-text-red w3-hide" id="rateLimitedRequestMessage">
 			Your requests have been rate limited by the Match Play Events API. This message will disappear in 1 minute
