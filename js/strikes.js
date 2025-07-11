@@ -238,10 +238,11 @@ function calcKnockoutTournament(players, groupCount, finalPlayers) {
 	let finalEndPlayers2 = [];
 	let playerGames2 = [ 0, 0, 0 ];
 	let iterations = 10000;
+	let distribution = [];
 
 	for (let h = 0; h < iterations; h++)
 	{
-		let survivingPlayers = runTournament(players, groupCount, finalStrikes1, finalPlayers, playerGames1, roundResult1, strikeDist);
+		let survivingPlayers = runTournament(players, groupCount, finalStrikes1, finalPlayers, playerGames1, roundResult1, strikeDist, distribution);
 		
 		finalEndPlayers1.push(survivingPlayers);
 		
@@ -286,6 +287,31 @@ function calcKnockoutTournament(players, groupCount, finalPlayers) {
 	document.getElementById("AvgPlayers").innerHTML = endPlayersAvg.toFixed(2);
 	document.getElementById("ExtremePlayers").innerHTML = Math.min(...finalEndPlayers1) + " / " + Math.max(...finalEndPlayers1);
 	document.getElementById("ReasonablePlayers").innerHTML = finalEndPlayers1[pct5] + " / " + finalEndPlayers1[pct95];
+
+	const distributionKeys = Object.keys(distribution);
+	const oldDistributionElements = document.getElementsByClassName("dist-clone");
+	while (oldDistributionElements.length > 0) oldDistributionElements[0].remove();
+
+	if (distributionKeys.length > 1) {
+		let playersLeftDist = document.getElementById("playersLeftDist");
+		playersLeftDist.style.display = 'block';
+		let playersLeftDistCols = playersLeftDist.getElementsByTagName("div");
+		playersLeftDistCols[0].innerHTML = `Players Left-${distributionKeys[0]}P`;
+		playersLeftDistCols[1].innerHTML = (distribution[distributionKeys[0]] / iterations * 100).toFixed(2) + "%";
+
+		let previousDist = playersLeftDist;
+		for (let i = 1; i < distributionKeys.length; i++) {
+			let currentDist = playersLeftDist.cloneNode(true);
+			currentDist.classList.add("dist-clone");
+			playersLeftDistCols = currentDist.getElementsByTagName("div");
+			playersLeftDistCols[0].innerHTML = `Players Left-${distributionKeys[i]}P`;
+			playersLeftDistCols[1].innerHTML = (distribution[distributionKeys[i]] / iterations * 100).toFixed(2) + "%";
+			previousDist.insertAdjacentElement("afterend",currentDist);
+			previousDist = currentDist;
+		}
+	} else {
+		document.getElementById("playersLeftDist").style.display = 'none';
+	}
 
 	if (document.getElementById("finalsQuestion").checked) {
 		roundAvg = average(roundResult2);
@@ -336,7 +362,7 @@ function calcKnockoutTournament(players, groupCount, finalPlayers) {
 	document.getElementById("copylink").style.display = 'block';
 }
 
-function runTournament(players, groupCount, finalStrikes, finalPlayers, playerGames, roundResult, strikeDist) {
+function runTournament(players, groupCount, finalStrikes, finalPlayers, playerGames, roundResult, strikeDist, distribution) {
 	let topScore = 10000000.0;
 	let lowScore = 10000000.0;
 
@@ -417,7 +443,7 @@ function runTournament(players, groupCount, finalStrikes, finalPlayers, playerGa
 				// This will carry over to playerList - match[j] is by reference.
 				match[j].strikes += strikeDist[matchPlayers - 2][rank];
 			}
-			
+
 		}
 		for (let j = 0; j < playerList.length; j++) 
 		{
@@ -429,6 +455,12 @@ function runTournament(players, groupCount, finalStrikes, finalPlayers, playerGa
 			}				
 		}
 
+		if (survivingPlayers <= finalPlayers && distribution !== undefined)
+		{
+			if (!distribution[survivingPlayers]) distribution[survivingPlayers] = 1;
+			else distribution[survivingPlayers] += 1;
+		}
+			
 		playerGames[0] += singlePlayerMatches[0];
 		playerGames[1] += singlePlayerMatches[1];
 		playerGames[2] += singlePlayerMatches[2];
