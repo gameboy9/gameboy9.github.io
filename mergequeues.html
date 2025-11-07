@@ -94,8 +94,8 @@
 		</div>
 		
 		<div class="w3-container w3-row" style="margin-top: 16px;">
-			<label for="tournamentIdA">Tournament 1: </label>
-			<input type="number" id="tournamentIdA" name="tournamentIdA" />
+			<label for="tournamentIdA">Tournament ID 1: </label>
+			<input type="number" id="tournamentIdA" name="tournamentIdA" title="Tournament ID is a 6-digit number from the end of the tournament URL" />
 		</div>
 		<div class="w3-container w3-row" style="margin-top: 8px;">
 			<label for="tournamentShortNameA">Queue name: </label>
@@ -104,8 +104,8 @@
 		</div>
 		
 		<div class="w3-container w3-row" style="margin-top: 16px;">
-			<label for="tournamentIdB">Tournament 2: </label>
-			<input type="number" id="tournamentIdB" name="tournamentIdB" />
+			<label for="tournamentIdB">Tournament ID 2: </label>
+			<input type="number" id="tournamentIdB" name="tournamentIdB" title="Tournament ID is a 6-digit number from the end of the tournament URL" />
 		</div>
 		<div class="w3-container w3-row" style="margin-top: 8px;">
 			<label for="tournamentShortNameB">Queue name: </label>
@@ -115,7 +115,11 @@
 
 		<div class="w3-container w3-row" style="margin-top: 16px;">
 			<input class="w3-check" type="checkbox" id="usePrefixForSummaryPlayerNames" name="usePrefixForSummaryPlayerNames" />
-			<label for="tournamentIdB">Include first letter of the queue name in the Queue Summary section</label>
+			<label for="usePrefixForSummaryPlayerNames">Include first letter of the queue name in the Queue Summary section</label>
+		</div>
+		<div class="w3-container w3-row" style="margin-top: 8px;">
+			<input class="w3-check" type="checkbox" id="mergeByArenaName" name="mergeByArenaName"  title="Use if the tournaments use different arena records for the same machine" />
+			<label for="mergeByArenaName" title="Use if the tournaments use different arena records for the same machine">Merge arenas by name</label>
 		</div>
 		<div class="w3-container w3-row" style="margin-top: 8px;">
 			<label>Display:</label><br />
