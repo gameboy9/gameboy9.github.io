@@ -15,6 +15,57 @@
  * QueuesManager.manager.cannedResponses = JSON.parse(`text copied from captured responses`);
  * loadQueuesButton();
  * 
+ * Alternatively, save the JSON responses and build a test script based on this template.
+ *
+```
+QueuesManager.manager.useCannedResponses = true;
+
+QueuesManager.manager.cannedResponses = {};
+QueuesManager.manager.cannedResponses.dataLoadTimestamp = "2025-11-06T23:12:30Z";
+QueuesManager.manager.cannedResponses.displayTimestamp = QueuesManager.manager.cannedResponses.dataLoadTimestamp;
+
+let tournamentOneId = 123456;
+let tournamentTwoId = 123457;
+
+let tournamentOneResponse =
+{
+    "data": {
+        ...
+    }
+};
+
+
+let tournamentTwoResponse =
+{
+    "data": {
+        ...
+    }
+};
+
+let queuesOneResponse =
+{
+    "data": {
+        ...
+    }
+};
+
+let queuesTwoResponse =
+{
+    "data": {
+        ...
+    }
+};
+
+
+QueuesManager.manager.cannedResponses[`https://app.matchplay.events/api/tournaments/${tournamentOneId}?includePlayers=1&includeArenas=1`] = JSON.stringify(tournamentOneResponse);
+QueuesManager.manager.cannedResponses[`https://app.matchplay.events/api/tournaments/${tournamentTwoId}?includePlayers=1&includeArenas=1`] = JSON.stringify(tournamentTwoResponse);
+
+QueuesManager.manager.cannedResponses[`https://app.matchplay.events/api/tournaments/${tournamentOneId}/queues`] = JSON.stringify(queuesOneResponse);
+QueuesManager.manager.cannedResponses[`https://app.matchplay.events/api/tournaments/${tournamentTwoId}/queues`] = JSON.stringify(queuesTwoResponse);
+
+loadQueuesButton();
+```
+ * 
  */
 
 const nbspEntity = "\u00A0";
@@ -43,8 +94,19 @@ class QueuesManager {
 		this.lastLoadTournamentInfoAttemptTimestamp = undefined;
 		this.loadTournamentInfoNeeded = true;
 		this.usePrefixForSummaryPlayerNames = true;
+		this.mergeByArenaName = false;
 		this.arenaOrder = "";
 		this.cannedResponses = {};
+	}
+
+	clearAllData() {
+		this.queues = {};
+		this.tournamentInfo = {};
+		this.arenaSummary = [];
+		this.mergedArenas = new Map();
+		this.lastLoadTournamentInfoTimestamp = undefined;
+		this.lastLoadTournamentInfoAttemptTimestamp = undefined;
+		this.loadTournamentInfoNeeded = true;
 	}
 
 	getQueueName(tournamentId) {
@@ -260,12 +322,12 @@ class QueuesManager {
 		this.queueDisplay.classList.add("queue-list-grid-3");
 
 		for (const arenaKey of Object.keys(this.queues)) {
-			const arenaId = parseInt(arenaKey);
-			if (!this.arenaSummary.find(arenaInfo => arenaInfo.arenaId === arenaId)) {
+			const arenaId = arenaKey.toString();
+			if (!this.arenaSummary.find(arenaInfo => arenaInfo.arenaId.toString() === arenaId)) {
 				this.loadTournamentInfoNeeded = true;
 				await this.loadTournamentInfoIfNeededWithDebounce()
 				// Try again in case that load worked
-				if (!this.arenaSummary.find(arenaInfo => arenaInfo.arenaId === arenaId)) {
+				if (!this.arenaSummary.find(arenaInfo => arenaInfo.arenaId.toString() === arenaId)) {
 					this.arenaSummary.push({
 						arenaId: arenaId,
 						name: "Unknown arena - " + arenaId,
@@ -482,6 +544,13 @@ class QueuesManager {
 		}
 	}
 
+	adjustArenaId(arena) {
+		if (this.mergeByArenaName) {
+			// Keep only word characters
+			arena.arenaId = arena.name?.replace(/[^\w]/g,'');
+		}
+	}
+
 	loadTournamentInfo() {
 		const requests = this.tournamentIdList.map(tournamentId => {
 			if (tournamentId !== undefined && tournamentId > 0) {
@@ -512,6 +581,8 @@ class QueuesManager {
 					this.tournamentInfo[response.data.tournamentId] = response.data;
 
 					response.data.arenas.forEach(arena => {
+						arena.originalArenaId = arena.arenaId;
+						this.adjustArenaId(arena);
 						if (this.mergedArenas.has(arena.arenaId)) {
 							this.mergedArenas.get(arena.arenaId).push(arena);
 						} else {
@@ -600,10 +671,27 @@ class QueuesManager {
 					console.dir(response);
 
 					Object.keys(response.data).forEach(key => {
-						if (this.queues[key] === undefined) {
-							this.queues[key] = [];
+						let queuesKey = key;
+
+						if (this.mergeByArenaName) {
+							response.data[key].forEach((queueItem) => {
+								queueItem.originalArenaId = queueItem.arenaId;
+								// Lookup by originalArenaId
+								let matchedArenaList = this.mergedArenas.values().find((arenaList) =>
+									arenaList.find((arena) => arena.originalArenaId === queueItem.originalArenaId)									
+								);
+								if (matchedArenaList !== undefined) {
+									queueItem.arenaId = matchedArenaList[0].arenaId;
+									queuesKey = queueItem.arenaId;
+								}
+							});
 						}
-						this.queues[key].push(...response.data[key]);
+
+						if (this.queues[queuesKey] === undefined) {
+							this.queues[queuesKey] = [];
+						}
+
+						this.queues[queuesKey].push(...response.data[key]);
 					});
 				}
 			});
@@ -637,6 +725,7 @@ class MergeQueuesSettings {
 	static getTournamentShortNameBEl = () => document.getElementById("tournamentShortNameB");
 	static getArenaOrderEl = () => document.getElementById("arenaOrder");
 	static getUsePrefixForSummaryPlayerNamesEl = () => document.getElementById("usePrefixForSummaryPlayerNames");
+	static getMergeByArenaNameEl = () => document.getElementById("mergeByArenaName");
 	static getSectionsToDislayDetailsEl = () => document.getElementById("sectionsToDisplay-details");
 	static getSectionsToDislaySummaryEl = () => document.getElementById("sectionsToDisplay-summary");
 	static getSectionsToDislayBothEl = () => document.getElementById("sectionsToDisplay-both");
@@ -674,6 +763,7 @@ class MergeQueuesSettings {
 		currentSavedSettingsValues.tournamentShortNameB = this.settingsValues.tournamentShortNameB;
 		currentSavedSettingsValues.arenaOrder = this.settingsValues.arenaOrder;
 		currentSavedSettingsValues.usePrefixForSummaryPlayerNames = this.settingsValues.usePrefixForSummaryPlayerNames;
+		currentSavedSettingsValues.mergeByArenaName = this.settingsValues.mergeByArenaName;
 		currentSavedSettingsValues.displayDetails = this.settingsValues.displayDetails;
 		currentSavedSettingsValues.displaySummary = this.settingsValues.displaySummary;
 		localStorage.setItem(MergeQueuesSettings.getStorageItemKey(), JSON.stringify(currentSavedSettingsValues));
@@ -688,6 +778,7 @@ class MergeQueuesSettings {
 		delete currentSavedSettingsValues.tournamentShortNameB;
 		delete currentSavedSettingsValues.arenaOrder;
 		delete currentSavedSettingsValues.usePrefixForSummaryPlayerNames;
+		delete currentSavedSettingsValues.mergeByArenaName;
 		delete currentSavedSettingsValues.displayDetails;
 		delete currentSavedSettingsValues.displaySummary;
 		localStorage.setItem(MergeQueuesSettings.getStorageItemKey(), JSON.stringify(currentSavedSettingsValues));
@@ -715,6 +806,7 @@ class MergeQueuesSettings {
 		this.settingsValues.tournamentShortNameB = MergeQueuesSettings.getTournamentShortNameBEl().value;
 		this.settingsValues.arenaOrder = MergeQueuesSettings.getArenaOrderEl().value;
 		this.settingsValues.usePrefixForSummaryPlayerNames = MergeQueuesSettings.getUsePrefixForSummaryPlayerNamesEl().checked;
+		this.settingsValues.mergeByArenaName = MergeQueuesSettings.getMergeByArenaNameEl().checked;
 		const displayBothChecked = MergeQueuesSettings.getSectionsToDislayBothEl().checked;
 		this.settingsValues.displayDetails = displayBothChecked || MergeQueuesSettings.getSectionsToDislayDetailsEl().checked;
 		this.settingsValues.displaySummary = displayBothChecked || MergeQueuesSettings.getSectionsToDislaySummaryEl().checked;
@@ -729,6 +821,9 @@ class MergeQueuesSettings {
 		MergeQueuesSettings.getArenaOrderEl().value = this.settingsValues.arenaOrder ?? "";
 		if (this.settingsValues.usePrefixForSummaryPlayerNames !== undefined) {
 			MergeQueuesSettings.getUsePrefixForSummaryPlayerNamesEl().checked = this.settingsValues.usePrefixForSummaryPlayerNames;
+		}
+		if (this.settingsValues.mergeByArenaName !== undefined) {
+			MergeQueuesSettings.getMergeByArenaNameEl().checked = this.settingsValues.mergeByArenaName;
 		}
 		if (this.settingsValues.displayDetails && this.settingsValues.displaySummary) {
 			MergeQueuesSettings.getSectionsToDislayBothEl().checked = true;
@@ -752,6 +847,7 @@ class MergeQueuesSettings {
 
 		QueuesManager.manager.arenaOrder = this.settingsValues.arenaOrder;
 		QueuesManager.manager.usePrefixForSummaryPlayerNames = this.settingsValues.usePrefixForSummaryPlayerNames;
+		QueuesManager.manager.mergeByArenaName = this.settingsValues.mergeByArenaName;
 		QueuesManager.manager.displayDetails = this.settingsValues.displayDetails;
 		QueuesManager.manager.displaySummary = this.settingsValues.displaySummary;
 	}
@@ -838,9 +934,15 @@ async function loadQueuesButton() {
 		QueuesManager.manager.cannedResponses.dataLoadTimestamp = dataLoadTimestamp;
 	}
 
+	let originalMergeByArenaName = QueuesManager.manager.mergeByArenaName;
 	MergeQueuesSettings.settings.readFromPage();
 	MergeQueuesSettings.settings.applyToQueuesManager();
 	if (!validateSettings()) return;
+	if (QueuesManager.manager.mergeByArenaName !== originalMergeByArenaName) {
+		// When the merge by arena name setting changes some queues may no longer exist
+		// and in this case we need to hard force a reload with no debounce
+		QueuesManager.manager.clearAllData();
+	}
 
 	await QueuesManager.manager.loadTournamentInfoIfNeededWithDebounce();
 	await QueuesManager.manager.loadAllQueues();
